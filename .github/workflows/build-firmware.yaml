@@ -1,0 +1,27 @@
+name: "Build firmware"
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - Firmware/Microbit_v1/**
+  pull_request:
+    branches: [ main ]
+    paths:
+      - Firmware/Microbit_v1/**
+
+defaults:
+  run:
+    working-directory: Firmware/Microbit_v1
+
+jobs:
+  build-firmware:
+    runs-on: macos-11
+    steps:
+      - uses: actions/checkout@v2
+
+      # Build firmware image
+      - name: "Install build dependencies"
+        run: brew install --cask gcc-arm-embedded
+      - name: "Build firmware image"
+        run: make

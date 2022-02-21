@@ -1,0 +1,53 @@
+name: "Build application"
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - OpenHaystack/**   
+  pull_request:
+    branches: [ main ]
+    paths:
+      - OpenHaystack/**
+
+env:
+  APP: OpenHaystack
+defaults:
+  run:
+    working-directory: OpenHaystack
+
+jobs:
+  format-swift:
+    runs-on: macos-11
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v2
+      - name: "Install swift-format"
+        run: brew install swift-format
+      - name: "Run swift-format"
+        run: swift-format lint --recursive .
+
+  format-objc:
+    runs-on: macos-latest
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v2
+      - name: "Install clang-format"
+        run: brew install clang-format
+      - name: "Run clang-format"
+        run: clang-format -n **/*.{h,m}
+
+  build-app:
+    runs-on: macos-latest
+    needs:
+      - format-swift
+      - format-objc
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v2
+      - name: "Select Xcode 13"
+        uses: devbotsxyz/xcode-select@v1
+        with:
+          version: "13"
+      - name: "Archive project"
+        run: xcodebuild archive -scheme ${APP} -configuration release -archivePath ${APP}.xcarchive
